@@ -14,7 +14,7 @@ class Users::SessionsController < Devise::SessionsController
     if @user_provider && @user_provider != :unknown
       redirect_to "/users/sessions/sso_logout?provider=#{@user_provider}"
     else
-      redirect_to root_path, notice: "ログアウトしました。"
+      redirect_to root_path, notice: "Successfully signed out."
     end
   end
 
