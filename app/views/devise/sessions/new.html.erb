@@ -1,0 +1,9 @@
+<h2>Log in</h2>
+
+<%= render "devise/shared/error_messages", resource: resource %>
+
+<div class="actions">
+  <%= link_to "Sign up with Google", user_google_oauth2_omniauth_authorize_path, class: "btn btn-outline-primary w-100 mb-3" %>
+</div>
+
+<%= render "devise/shared/links" %>
