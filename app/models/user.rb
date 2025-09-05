@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  devise :omniauthable, omniauth_providers: %i[google_oauth2]
+  devise :registerable, :omniauthable, omniauth_providers: %i[google_oauth2]
 
   has_many :llm_api_keys, dependent: :destroy
 
