@@ -24,7 +24,7 @@ class Users::SessionsController < Devise::SessionsController
     @provider_name = provider_display_name(@provider)
     @logout_url = provider_logout_url(@provider)
 
-    render 'sso_logout'
+    render "sso_logout"
   end
 
   private
@@ -34,9 +34,9 @@ class Users::SessionsController < Devise::SessionsController
   def provider_display_name(provider)
     case provider
     when :google_oauth2
-      'Google'
+      "Google"
     else
-      '不明'
+      "不明"
     end
   end
 
@@ -44,7 +44,7 @@ class Users::SessionsController < Devise::SessionsController
   def provider_logout_url(provider)
     case provider
     when :google_oauth2
-      'https://accounts.google.com/logout'
+      "https://accounts.google.com/logout"
     else
       root_url
     end
