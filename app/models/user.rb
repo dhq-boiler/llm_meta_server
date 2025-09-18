@@ -12,4 +12,85 @@ class User < ApplicationRecord
       user.google_id = auth.uid
     end
   end
+
+  # APIキー追加
+  def add_llm_apikey(llm_type, api_key, description)
+    # # 既存のAPIキーチェック
+    # existing_key = llm_api_keys.find_by(llm_type: llm_type)
+    # if existing_key
+    #   raise StandardError, "#{llm_type.upcase}のAPIキーは既に登録されています"
+    # end
+
+    # 新しいAPIキーを暗号化して保存
+    encrypted_key = ApiKeyEncrypter.new.encrypt(api_key)
+
+    llm_api_keys.create!(
+      uuid: SecureRandom.uuid,
+      llm_type: llm_type,
+      encrypted_api_key: encrypted_key,
+      description: description
+    )
+  end
+
+  # APIキー更新
+  def update_llm_apikey(key_id, new_api_key, description)
+    llm_api_key = llm_api_keys.find(key_id)
+
+    if new_api_key.present? && description.present?
+      encrypted_key = ApiKeyEncrypter.new.encrypt(new_api_key)
+
+      llm_api_key.update!(
+        encrypted_api_key: encrypted_key,
+        description: description
+      )
+
+      :updated_both
+    elsif new_api_key.present?
+      encrypted_key = ApiKeyEncrypter.new.encrypt(new_api_key)
+
+      llm_api_key.update!(
+        encrypted_api_key: encrypted_key
+      )
+
+      :updated_key
+    elsif description.present?
+      llm_api_key.update!(
+        description: description
+      )
+
+      :updated_description
+    else
+      raise ArgumentError, "新しいAPIキーまたは説明を入力してください"
+    end
+  end
+
+  # APIキー削除（安全な削除）
+  def remove_llm_apikey(key_id)
+    llm_api_key = llm_api_keys.find_by(id: key_id)
+
+    unless llm_api_key
+      raise ActiveRecord::RecordNotFound, "指定されたAPIキーが見つかりません"
+    end
+
+    # トランザクション内で削除
+    ActiveRecord::Base.transaction do
+      # 関連データのクリーンアップ
+      cleanup_related_data(llm_api_key)
+
+      # APIキー削除
+      llm_api_key.destroy!
+
+      Rails.logger.info "User #{id} successfully removed API key #{llm_api_key.uuid}"
+    end
+
+    llm_api_key
+  end
+
+  private
+
+  # 関連データのクリーンアップ
+  def cleanup_related_data(llm_api_key)
+    # キャッシュの無効化
+    ApiKeyManager.new.invalidate_cache(self, llm_api_key.uuid)
+  end
 end

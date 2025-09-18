@@ -1,0 +1,188 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-gray-900">API キー管理</h2>
+      <%= link_to "プロフィールに戻る", user_path(@user), class: "text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-200 transition-colors" %>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <!-- 既存のAPI キー一覧 -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <h4 class="text-lg font-semibold text-gray-900">登録済みAPI キー</h4>
+      </div>
+      <div class="px-6 py-4">
+        <% if @llm_api_keys.any? %>
+          <div class="space-y-3">
+            <% @llm_api_keys.each do |api_key| %>
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                <div class="flex-1">
+                  <div class="flex items-center space-x-3 mb-2">
+                    <% if api_key.llm_type == "OpenAI" %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
+                        <%= api_key.llm_type %>
+                      </span>
+                    <% elsif api_key.llm_type == "Anthropic" %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-600 text-amber-100">
+                        <%= api_key.llm_type %>
+                      </span>
+                    <% elsif api_key.llm_type == "Google" %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                        <%= api_key.llm_type %>
+                      </span>
+                    <% elsif api_key.llm_type == "Ollama" %>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-black border border-black">
+                        <%= api_key.llm_type %>
+                      </span>
+                    <% end %>
+                    <% if api_key.description.present? %>
+                      <span class="text-sm text-gray-600"><%= api_key.description %></span>
+                    <% end %>
+                  </div>
+                  <div class="space-y-1">
+<!--                    <div class="flex items-center space-x-2">-->
+<!--                      <span class="text-sm font-medium text-gray-700">UUID:</span>-->
+<!--                      <code class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded"><%#= api_key.uuid %></code>-->
+<!--                    </div>-->
+                    <span class="text-sm font-medium text-gray-700">登録日:</span>
+                    <span class="text-sm text-gray-600"><%= api_key.created_at.strftime("%Y/%m/%d %H:%M") %></span>
+                    <% if api_key.created_at < api_key.updated_at %>
+                      <span class="text-sm font-medium text-gray-700 ml-2">更新日:</span>
+                      <span class="text-sm text-gray-600"><%= api_key.updated_at.strftime("%Y/%m/%d %H:%M") %></span>
+                    <% end %>
+                  </div>
+                </div>
+                <div class="flex flex-col space-y-2 ml-4">
+                  <button type="button" class="text-sm bg-yellow-100 text-yellow-700 px-3 py-1 rounded-md hover:bg-yellow-200 transition-colors"
+                          onclick="openModal('updateModal<%= api_key.id %>')">
+                    更新
+                  </button>
+                  <%= link_to "削除", user_llm_api_key_path(@user, api_key),
+                              class: "text-sm bg-red-100 text-red-700 px-3 py-1 rounded-md hover:bg-red-200 transition-colors text-center",
+                              data: {
+                                turbo_method: :delete,
+                                turbo_confirm: "本当に削除しますか？"
+                              } %>
+                </div>
+              </div>
+
+              <!-- 更新モーダル -->
+              <div id="updateModal<%= api_key.id %>" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                  <%= form_with url: user_llm_api_key_path(@user, api_key), method: :patch, local: true do |form| %>
+                    <div class="mb-4">
+                      <h5 class="text-lg font-semibold text-gray-900 mb-4">API キー更新 - <%= api_key.llm_type.upcase %></h5>
+                      <button type="button" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" onclick="closeModal('updateModal<%= api_key.id %>')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="mb-6">
+                      <%= hidden_field_tag :key_id, api_key.id %>
+                      <div class="mb-4">
+                        <label for="api_key_<%= api_key.id %>" class="block font-medium text-gray-700 mb-2">新しいAPI キー</label>
+                        <%= password_field_tag :api_key, "",
+                                               class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                                               id: "api_key_#{api_key.id}",
+                                               placeholder: "新しいAPI キーを入力してください" %>
+                      </div>
+                      <div class="mb-4">
+                        <label for="description_<%= api_key.id %>" class="block font-medium text-gray-700 mb-2">説明（省略可）</label>
+                        <%= text_field_tag :description, api_key.description,
+                                           class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                                           id: "description_#{api_key.id}",
+                                           placeholder: "このAPI キーの説明を入力してください（例: 用途やプロジェクト名）" %>
+                        <div class="text-sm text-gray-500 mt-1">
+                          API キーの用途やプロジェクト名など、わかりやすい説明を入力してください。
+                        </div>
+                      </div>
+                      <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                        <p class="text-sm text-yellow-800">セキュリティのため、現在のAPI キーは表示されません。</p>
+                      </div>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                      <button type="button" class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" onclick="closeModal('updateModal<%= api_key.id %>')">
+                        キャンセル
+                      </button>
+                      <%= submit_tag "更新", class: "px-4 py-2 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors" %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <p class="text-gray-500 text-center mb-2">まだAPI キーが登録されていません。</p>
+            <p class="text-gray-500 text-center">下のフォームから新しいAPI キーを追加してください。</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- 新規API キー追加フォーム -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <h5 class="font-semibold text-gray-900">新しいAPI キーを追加</h5>
+      </div>
+      <div class="px-6 py-4">
+        <%= form_with url: user_llm_api_keys_path, method: :post, local: true do |form| %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="llm_type" class="block font-medium text-gray-700 mb-2">LLMタイプ</label>
+              <%= select_tag :llm_type,
+                             options_for_select([
+                                                  ['OpenAI', 'OpenAI'],
+                                                  ['Anthropic (Claude)', 'Anthropic'],
+                                                  ['Google (Gemini)', 'Google'],
+                                                  ['Ollama', 'Ollama']
+                                                ], ''),
+                             { class: "w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", prompt: "LLMタイプを選択してください" } %>
+            </div>
+
+            <div class="col-start-1 col-span-2">
+              <label for="api_key" class="block font-medium text-gray-700 mb-2">API キー</label>
+              <%= password_field_tag :api_key, "",
+                                     class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                                     placeholder: "API キーを入力してください",
+                                     required: true %>
+              <p class="text-sm text-gray-500 mt-1">
+                API キーは暗号化されて安全に保存されます。
+              </p>
+            </div>
+            <div class="col-span-2">
+              <label for="description" class="block font-medium text-gray-700 mb-2">説明（省略可）</label>
+              <%= text_field_tag :description, "",
+                                  class: "w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                                  placeholder: "このAPI キーの説明を入力してください（例: 用途やプロジェクト名）" %>
+              <div class="text-sm text-gray-500 mt-1">
+                API キーの用途やプロジェクト名など、わかりやすい説明を入力してください。
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end">
+            <%= submit_tag "API キーを追加", class: "bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(modalId) {
+  document.getElementById(modalId).classList.remove('hidden');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.add('hidden');
+}
+
+function toggleAccordion(id) {
+  const element = document.getElementById(id);
+  element.classList.toggle('hidden');
+}
+</script>
