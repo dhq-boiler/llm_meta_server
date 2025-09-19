@@ -15,12 +15,6 @@ class User < ApplicationRecord
 
   # Add API key
   def add_llm_apikey(llm_type, api_key, description)
-    # # 既存のAPIキーチェック
-    # existing_key = llm_api_keys.find_by(llm_type: llm_type)
-    # if existing_key
-    #   raise StandardError, "#{llm_type.upcase}のAPIキーは既に登録されています"
-    # end
-
     # Encrypt and save new API key
     encrypted_key = ApiKeyEncrypter.new.encrypt(api_key)
 
