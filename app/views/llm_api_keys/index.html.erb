@@ -72,7 +72,7 @@
                 <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                   <%= form_with url: user_llm_api_key_path(@user, api_key), method: :patch, local: true do |form| %>
                     <div class="mb-4">
-                      <h5 class="text-lg font-semibold text-gray-900 mb-4">Update API Key - <%= api_key.llm_type.upcase %></h5>
+                      <h5 class="text-lg font-semibold text-gray-900 mb-4">Update API Key - <%= api_key.llm_type %></h5>
                       <button type="button" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" onclick="closeModal('updateModal<%= api_key.id %>')">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
