@@ -13,7 +13,7 @@ class User < ApplicationRecord
     end
   end
 
-  # APIキー追加
+  # Add API key
   def add_llm_apikey(llm_type, api_key, description)
     # # 既存のAPIキーチェック
     # existing_key = llm_api_keys.find_by(llm_type: llm_type)
@@ -21,7 +21,7 @@ class User < ApplicationRecord
     #   raise StandardError, "#{llm_type.upcase}のAPIキーは既に登録されています"
     # end
 
-    # 新しいAPIキーを暗号化して保存
+    # Encrypt and save new API key
     encrypted_key = ApiKeyEncrypter.new.encrypt(api_key)
 
     llm_api_keys.create!(
@@ -32,7 +32,7 @@ class User < ApplicationRecord
     )
   end
 
-  # APIキー更新
+  # Update API key
   def update_llm_apikey(key_id, new_api_key, description)
     llm_api_key = llm_api_keys.find(key_id)
 
@@ -60,24 +60,24 @@ class User < ApplicationRecord
 
       :updated_description
     else
-      raise ArgumentError, "新しいAPIキーまたは説明を入力してください"
+      raise ArgumentError, "Please enter a new API key or description"
     end
   end
 
-  # APIキー削除（安全な削除）
+  # Delete API key (safe deletion)
   def remove_llm_apikey(key_id)
     llm_api_key = llm_api_keys.find_by(id: key_id)
 
     unless llm_api_key
-      raise ActiveRecord::RecordNotFound, "指定されたAPIキーが見つかりません"
+      raise ActiveRecord::RecordNotFound, "The specified API key was not found"
     end
 
-    # トランザクション内で削除
+    # Delete within transaction
     ActiveRecord::Base.transaction do
-      # 関連データのクリーンアップ
+      # Clean up related data
       cleanup_related_data(llm_api_key)
 
-      # APIキー削除
+      # Delete API key
       llm_api_key.destroy!
 
       Rails.logger.info "User #{id} successfully removed API key #{llm_api_key.uuid}"
@@ -88,9 +88,9 @@ class User < ApplicationRecord
 
   private
 
-  # 関連データのクリーンアップ
+  # Clean up related data
   def cleanup_related_data(llm_api_key)
-    # キャッシュの無効化
+    # Invalidate cache
     ApiKeyManager.new.invalidate_cache(self, llm_api_key.uuid)
   end
 end
