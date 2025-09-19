@@ -44,25 +44,7 @@
           </div>
           <div class="px-6 py-4">
             <p class="text-gray-600 mb-4">Manage your LLM service API keys.</p>
-            <div class="space-y-2">
-              <% if @user.llm_api_keys&.any? %>
-                <% @user.llm_api_keys.each do |api_key| %>
-                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                    <div>
-                      <h6 class="font-medium text-gray-900 mb-1"><%= api_key.llm_type %></h6>
-<!--                      <small class="text-gray-500"><%#= api_key.uuid %></small>-->
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Configured
-                    </span>
-                  </div>
-                <% end %>
-              <% else %>
-                <div class="p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                  <p class="text-gray-500 text-center mb-0">No API keys registered yet.</p>
-                </div>
-              <% end %>
-            </div>
+            <p class="text-gray-600"><% if @user.llm_api_keys.any? %><%= @user.llm_api_keys.count %> <% else %>No <% end %>API <% if @user.llm_api_keys.count == 1 %>Key is <% else %>Keys are <% end %> registered.</p>
           </div>
         </div>
       </div>
