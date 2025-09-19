@@ -17,12 +17,12 @@ class LlmApiKeysController < ApplicationController
     if llm_type.present? && api_key.present?
       begin
         @user.add_llm_apikey(llm_type, api_key, description)
-        redirect_to user_llm_api_keys_path, notice: "API キーを追加しました"
+        redirect_to user_llm_api_keys_path, notice: "API key has been added successfully"
       rescue => e
-        redirect_to user_llm_api_keys_path, method: :get, alert: "API キーの追加に失敗しました: #{e.message}"
+        redirect_to user_llm_api_keys_path, method: :get, alert: "Failed to add API key: #{e.message}"
       end
     else
-      redirect_to user_llm_api_keys_path, alert: "LLMタイプとAPI キーを入力してください"
+      redirect_to user_llm_api_keys_path, alert: "Please enter LLM type and API key"
     end
   end
 
@@ -34,13 +34,13 @@ class LlmApiKeysController < ApplicationController
     result = @user.update_llm_apikey(@llm_api_key.id, new_api_key, description)
     case result
     when :updated_both
-      redirect_to user_llm_api_keys_path, notice: "API キーと説明を更新しました"
+      redirect_to user_llm_api_keys_path, notice: "API key and description have been updated successfully"
     when :updated_key
-      redirect_to user_llm_api_keys_path, notice: "API キーを更新しました"
+      redirect_to user_llm_api_keys_path, notice: "API key has been updated successfully"
     when :updated_description
-      redirect_to user_llm_api_keys_path, notice: "API キーの説明を更新しました"
+      redirect_to user_llm_api_keys_path, notice: "Description of API key has been updated successfully"
     else
-      redirect_to user_llm_api_keys_path, alert: "更新に失敗しました: #{@llm_api_key.errors.full_messages.join(', ')}"
+      redirect_to user_llm_api_keys_path, alert: "Please enter an API key"
     end
   end
 
@@ -49,9 +49,9 @@ class LlmApiKeysController < ApplicationController
     llm_type = @llm_api_key.llm_type
 
     if @llm_api_key.destroy
-      redirect_to user_llm_api_keys_path, notice: "#{llm_type&.upcase} API キーを削除しました"
+      redirect_to user_llm_api_keys_path, notice: "#{llm_type&.upcase} API key has been deleted successfully"
     else
-      redirect_to user_llm_api_keys_path, alert: "API キーの削除に失敗しました"
+      redirect_to user_llm_api_keys_path, alert: "Failed to delete API key"
     end
   end
 
@@ -64,7 +64,7 @@ class LlmApiKeysController < ApplicationController
   def set_llm_api_key
     @llm_api_key = @user.llm_api_keys.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to user_path(@user), alert: "指定されたAPI キーが見つかりません"
+    redirect_to user_path(@user), alert: "The specified API key was not found"
   end
 
   # 必要に応じて使用できるStrong Parameters（現在は未使用）
