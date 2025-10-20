@@ -9,7 +9,7 @@ module LlmRbFacade
 
     def available_models_for(llm_api_key)
       llm = create_llm_client llm_api_key
-      llm.models.all.map { it.id || it.name.gsub(/^models\//, "") } # Google LLM uses 'name' instead of 'id' and prefixes model_id with 'models/'
+      llm.models.all.map { it.id || filtered_model_name(it.name) } # Google LLM uses 'name' instead of 'id' and prefixes model_id with 'models/'
     end
 
     def create_llm_client(llm_api_key)
@@ -27,7 +27,7 @@ module LlmRbFacade
       model = llm.models.all.find { it.id == model_name || it.name == "models/" + model_name }
       raise ModelNotFoundError, model_name unless model
 
-      model.id || model.name.gsub(/^models\//, "") # Google LLM uses 'name' instead of 'id' and prefixes model_id with 'models/'
+      model.id || filtered_model_name(model.name) # Google LLM uses 'name' instead of 'id' and prefixes model_id with 'models/'
     end
 
     def execute_chat!(llm, model_id, prompt)
@@ -35,6 +35,10 @@ module LlmRbFacade
       messages = bot.chat { it.user prompt }
 
       messages.map { it.content }.join "\n"
+    end
+
+    def filtered_model_name(model_name)
+      model_name.gsub(/^models\//, "")
     end
   end
 end
