@@ -24,7 +24,7 @@ module LlmRbFacade
     end
 
     def find_model_id(llm, model_name)
-      model = llm.models.all.find { _1.id == model_name || _1.name == "models/" + model_name }
+      model = llm.models.all.find { it.id == model_name || it.name == "models/" + model_name }
       raise ModelNotFoundError, model_name unless model
 
       model.id || model.name.gsub(/^models\//, "") # Google LLM uses 'name' instead of 'id' and prefixes model_id with 'models/'
@@ -32,9 +32,9 @@ module LlmRbFacade
 
     def execute_chat!(llm, model_id, prompt)
       bot = LLM::Bot.new llm, model: model_id
-      messages = bot.chat { _1.user prompt }
+      messages = bot.chat { it.user prompt }
 
-      messages.map { _1.content }.join "\n"
+      messages.map { it.content }.join "\n"
     end
   end
 end
